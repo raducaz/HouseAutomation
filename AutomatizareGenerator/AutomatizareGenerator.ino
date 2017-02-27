@@ -59,9 +59,11 @@ void loop() {
       if (client.available()) {
         
         char receivedChar = client.read();
-        receivedText.concat(receivedChar);
-        
-        if (receivedChar == '\n')
+        if (receivedChar != '\n' && receivedChar != '\r')
+        {
+          receivedText.concat(receivedChar);
+        }
+        else if (receivedChar != '\n')
         {
           client.println("COMMAND RECEIVED:" + receivedText);
           break;
@@ -88,24 +90,23 @@ void loop() {
       {
         client.println("INTO: GENERATOR DEJA OPRIT ... INITIERE OPRIRE REPETATA ...");
       }
-      //oprire(client);
+      oprire(client);
+    }
+    else if(receivedText == "CLOSE")
+    {
+      client.println("CLOSING CONNECTION....");
+      delay(1);
+      client.stop();
     }
     else
     {
-      client.println("COMANDA NERECUNOSCUTA." + receivedText);
+      client.println("COMANDA NERECUNOSCUTA:" + receivedText);
       client.println("COMENZI RECUNOSCUTE:");
       client.println("START: Porneste ciclul de pornire generator.");
       client.println("STOP: Opreste generatorul.");
       client.println("CLOSE: Inchide conexiunea la terminal.");
     }
     
-    if(receivedText == "CLOSE")
-    {
-      client.println("CLOSING CONNECTION....");
-      delay(1);
-      client.stop();
-    }
-
     delay(1);
   }
 }
@@ -169,6 +170,8 @@ void oprire(EthernetClient client)
     sendMessageToClient(client, "ContactRetea220V - OPRIT");
     
     digitalWrite(ContactGenerator, HIGH); // CUPLARE NULL la MASA opreste generatorul
+    delay(4000);
+    digitalWrite(ContactGenerator, LOW); // DECUPLARE 
     sendMessageToClient(client, "ContactGenerator - OPRIT");
 
     generatorPornit = false;
